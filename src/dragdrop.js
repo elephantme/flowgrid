@@ -40,7 +40,8 @@ let dragdrop = {
 			this.offsetX = targetOffset.left - eleOffset.left + offsetX || 0;
 			this.offsetY = targetOffset.top - eleOffset.top + offsetY || 0;
 		}
-		console.log(event.target);
+
+		// console.log(this.containerX, this.containerY)
 	},
 	drag: function (event) {
 		if (!this.dragNode) return;
@@ -57,12 +58,16 @@ let dragdrop = {
 		this.pageX = event.pageX;
 		this.pageY = event.pageY;
 		// 判断是缩放还是拖拽
-		this.isResize ? this.resize() : this.position()
+		this.isResize ? this.resize() : this.position();
+		// console.log(this.dx, this.dy)
 	},
 	position: function () {
 		var flowgrid = this.flowgrid;
 		var x = this.pageX - this.containerX - this.offsetX;
 		var y = this.pageY - this.containerY - this.offsetY;
+
+		// console.log("坐标：", this.pageX, this.containerX, this.offsetX);
+
 		// 计算拖拽节点的坐标
 		this.dragElement.style.cssText += ';transform: translate(' + x + 'px,' + y + 'px);';
 		// 极值判断
@@ -75,6 +80,7 @@ let dragdrop = {
 		var node = this.dragNode.node;
 		var nodeX = Math.round(x / flowgrid.opt.cellW_Int);
 		var nodeY = Math.round(y / flowgrid.opt.cellH_Int);
+		// console.log("转化：",nodeX, nodeY, x, flowgrid.opt.cellW_Int)
 		// 判断坐标是否变化
 		if (node.x !== nodeX || node.y !== nodeY) {
 			node.x = nodeX;

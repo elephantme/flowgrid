@@ -40,7 +40,7 @@
       // 计算单元格
       computeCell: function (opt) {
         opt.cellW = opt.containerW / opt.col;
-        opt.cellH = opt.cellW / opt.cellScale.w * opt.cellScale.h;
+        opt.cellH = opt.cellScale.h / opt.cellScale.w * opt.cellW;
         opt.cellW_Int = Math.floor(opt.cellW);
         opt.cellH_Int = Math.floor(opt.cellH);
       },
@@ -125,19 +125,24 @@
       },
       // 流布局
       layout: function () {
+        console.log('call layout')
         // 原理: 遍历数据集, 寻找节点上面是否有空行, 修改node.y, 进行上移.
         for (let node of this.nodes) {
           let y = this.findEmptyLine(node);
+          console.log(y);
           node.y > y && this.moveUp(node, y);
         }
       },
       // 寻找空行, 扫描找到最接近顶部的空行是第几行
       findEmptyLine: function (node) {
         let r, c, cell, area = this.area;
+        // 从上一行开始找
         for (r = node.y - 1; r >= 0; r--) {
+          // 垂直向上查找
           for (c = node.x; c < node.x + node.w; c++) {
             cell = area[r][c];
-            if (cell || cell == 0) {
+            console.log(r, c, cell)
+            if (cell !== undefined) {
               return r + 1;
             }
           }
@@ -170,6 +175,7 @@
       },
       // 节点重叠, 拖拽节点过程中, 将所有节点坐标重新计算
       overlap: function (node, dx, dy, isResize) {
+        console.log('call overlap')
         var nodes = this.nodes,
           dx = dx || 0,
           dy = dy || 0,

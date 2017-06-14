@@ -4,7 +4,7 @@
 	(global.flowgrid = factory());
 }(this, (function () { 'use strict';
 
-var version = "1.2.1";
+var version = "1.2.2";
 
 // 常量
 var CONSTANT = {
@@ -84,7 +84,6 @@ var utils = {
 	}
 };
 
-// 拖拽对象
 var dragdrop = {
 	isResize: false, // 是否放大缩小
 	dragNode: null, // 拖拽节点的的关联的fg-item的vue对象
@@ -123,7 +122,8 @@ var dragdrop = {
 			this.offsetX = targetOffset.left - eleOffset.left + offsetX || 0;
 			this.offsetY = targetOffset.top - eleOffset.top + offsetY || 0;
 		}
-		console.log(event.target);
+
+		// console.log(this.containerX, this.containerY)
 	},
 	drag: function drag(event) {
 		if (!this.dragNode) return;
@@ -141,11 +141,15 @@ var dragdrop = {
 		this.pageY = event.pageY;
 		// 判断是缩放还是拖拽
 		this.isResize ? this.resize() : this.position();
+		// console.log(this.dx, this.dy)
 	},
 	position: function position() {
 		var flowgrid = this.flowgrid;
 		var x = this.pageX - this.containerX - this.offsetX;
 		var y = this.pageY - this.containerY - this.offsetY;
+
+		// console.log("坐标：", this.pageX, this.containerX, this.offsetX);
+
 		// 计算拖拽节点的坐标
 		this.dragElement.style.cssText += ';transform: translate(' + x + 'px,' + y + 'px);';
 		// 极值判断
@@ -158,6 +162,7 @@ var dragdrop = {
 		var node = this.dragNode.node;
 		var nodeX = Math.round(x / flowgrid.opt.cellW_Int);
 		var nodeY = Math.round(y / flowgrid.opt.cellH_Int);
+		// console.log("转化：",nodeX, nodeY, x, flowgrid.opt.cellW_Int)
 		// 判断坐标是否变化
 		if (node.x !== nodeX || node.y !== nodeY) {
 			node.x = nodeX;
@@ -224,7 +229,6 @@ var dragdrop = {
 	}
 };
 
-// 事件处理对象
 var handleEvent = {
 	init: function init(isbind) {
 		if (this.isbind) return;
@@ -266,6 +270,7 @@ var handleEvent = {
 			self.distanceY = event.pageY;
 			self.offsetX = event.offsetX || 0;
 			self.offsetY = event.offsetY || 0;
+			self.event = event;
 		}
 	},
 	mouseMove: function mouseMove(event) {
@@ -273,7 +278,7 @@ var handleEvent = {
 		if (!self.ele) return;
 		if (self.dragStart && self.isDrag(event)) {
 			self.dragStart = false;
-			dragdrop.dragStart(event, self.offsetX, self.offsetY, self.ele, self.isResize);
+			dragdrop.dragStart(self.event, self.offsetX, self.offsetY, self.ele, self.isResize);
 			return;
 		}
 		utils.throttle(new Date().getTime()) && dragdrop.drag(event);
@@ -334,7 +339,7 @@ var fgContainer = {
     // 计算单元格
     computeCell: function computeCell(opt) {
       opt.cellW = opt.containerW / opt.col;
-      opt.cellH = opt.cellW / opt.cellScale.w * opt.cellScale.h;
+      opt.cellH = opt.cellScale.h / opt.cellScale.w * opt.cellW;
       opt.cellW_Int = Math.floor(opt.cellW);
       opt.cellH_Int = Math.floor(opt.cellH);
     },
@@ -466,8 +471,9 @@ var fgContainer = {
     },
     // 流布局
     layout: function layout() {
+      console.log('call layout'
       // 原理: 遍历数据集, 寻找节点上面是否有空行, 修改node.y, 进行上移.
-      var _iteratorNormalCompletion3 = true;
+      );var _iteratorNormalCompletion3 = true;
       var _didIteratorError3 = false;
       var _iteratorError3 = undefined;
 
@@ -476,6 +482,7 @@ var fgContainer = {
           var node = _step3.value;
 
           var y = this.findEmptyLine(node);
+          console.log(y);
           node.y > y && this.moveUp(node, y);
         }
       } catch (err) {
@@ -499,10 +506,13 @@ var fgContainer = {
           c = void 0,
           cell = void 0,
           area = this.area;
+      // 从上一行开始找
       for (r = node.y - 1; r >= 0; r--) {
+        // 垂直向上查找
         for (c = node.x; c < node.x + node.w; c++) {
           cell = area[r][c];
-          if (cell || cell == 0) {
+          console.log(r, c, cell);
+          if (cell !== undefined) {
             return r + 1;
           }
         }
@@ -537,6 +547,7 @@ var fgContainer = {
     },
     // 节点重叠, 拖拽节点过程中, 将所有节点坐标重新计算
     overlap: function overlap(node, dx, dy, isResize) {
+      console.log('call overlap');
       var nodes = this.nodes,
           dx = dx || 0,
           dy = dy || 0,

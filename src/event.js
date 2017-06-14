@@ -44,6 +44,7 @@ let handleEvent = {
 			self.distanceY = event.pageY;
 			self.offsetX = event.offsetX || 0;
 			self.offsetY = event.offsetY || 0;
+			self.event = event;
 		}
 	},
 	mouseMove: function (event) {
@@ -51,7 +52,7 @@ let handleEvent = {
 		if (!self.ele) return;
 		if (self.dragStart && self.isDrag(event)) {
 			self.dragStart = false;
-			dragdrop.dragStart(event, self.offsetX, self.offsetY, self.ele, self.isResize);
+			dragdrop.dragStart(self.event, self.offsetX, self.offsetY, self.ele, self.isResize);
 			return;
 		}
 		utils.throttle(new Date().getTime()) && dragdrop.drag(event);
